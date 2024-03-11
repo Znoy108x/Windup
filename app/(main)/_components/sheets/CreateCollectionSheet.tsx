@@ -1,5 +1,5 @@
 "use client"
-import React from 'react'
+import React, { useState } from 'react'
 import {
     Sheet,
     SheetContent,
@@ -41,6 +41,8 @@ interface Props {
 
 const CreateCollectionSheet = ({ open, toggleOpen }: Props) => {
 
+    const [isSubmitting, setIsSubmitting] = useState(false)
+
     const router = useRouter()
 
     const form = useForm<createCollectionSchemaType>({
@@ -51,9 +53,8 @@ const CreateCollectionSheet = ({ open, toggleOpen }: Props) => {
         }
     })
 
-    const { isSubmitting } = form.formState
-
     const onSubmit = async (formData: createCollectionSchemaType) => {
+        setIsSubmitting(true)
         try {
             toast.promise(
                 createCollection(formData),
@@ -63,6 +64,7 @@ const CreateCollectionSheet = ({ open, toggleOpen }: Props) => {
                     success: () => {
                         form.reset()
                         toggleOpen()
+                        setIsSubmitting(false)
                         router.refresh()
                         return <span>Collection Created Successfully!</span>
                     }
