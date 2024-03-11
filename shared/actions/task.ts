@@ -20,14 +20,14 @@ export async function createTask(data: createTaskSchemaType) {
       expiresAt,
       Collection: {
         connect: {
-          id: collectionId,
+          id: String(collectionId),
         },
       },
     },
   });
 }
 
-export async function setTaskToDone(id: number) {
+export async function setTaskToDone(id: string) {
   const user = await currentUser();
 
   if (!user) {

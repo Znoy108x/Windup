@@ -35,9 +35,12 @@ import { Separator } from "../../../../shared/components/ui/separator";
 import { Button } from "../../../../shared/components/ui/button";
 import { createCollection } from "@/shared/actions/collection";
 import { toast } from "../../../../shared/components/ui/use-toast";
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
 import { Loader } from "lucide-react";
+import { useCollectionContext } from "@/shared/context/CollectionsContext";
+import { useAuth } from "@clerk/nextjs";
+import { v4 as uuidv4 } from 'uuid';
+
 
 interface Props {
   open: boolean;
@@ -45,33 +48,44 @@ interface Props {
 }
 
 function CreateCollectionSheet({ open, onOpenChange }: Props) {
+
+  const { userId, isLoaded, isSignedIn } = useAuth()
+  const { addCollection, removeCollection, collectionsNameMap } = useCollectionContext()
+
   const form = useForm<createCollectionSchemaType>({
     resolver: zodResolver(createCollectionSchema),
-    defaultValues: {},
+    defaultValues: {
+      color: "",
+      name: ""
+    },
   });
 
   const router = useRouter();
 
   const onSubmit = async (data: createCollectionSchemaType) => {
-    try {
-      await createCollection(data);
-      // Close the sheet
-      openChangeWrapper(false);
-      router.refresh();
-      toast({
-        title: "Success",
-        description: "Collection created successfully!",
-      });
-    } catch (e: any) {
-      // Show toast
+    const newCollectionId = uuidv4()
+    if (!collectionsNameMap.get(data.name)) {
+      try {
+        addCollection(data, userId as string, newCollectionId)
+        openChangeWrapper(false);
+        await createCollection(data);
+      } catch (err) {
+        removeCollection(newCollectionId)
+        toast({
+          title: "Error",
+          description: String(err),
+          variant: "destructive",
+        });
+      }
+    } else {
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again later",
+        description: "Collection name already taken!",
         variant: "destructive",
       });
-      console.log("Error while creating collection", e);
     }
   };
+
 
   const openChangeWrapper = (open: boolean) => {
     form.reset();

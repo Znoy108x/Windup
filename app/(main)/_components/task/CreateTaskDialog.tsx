@@ -55,6 +55,7 @@ function CreateTaskDialog({ open, collection, setOpen }: Props) {
   };
 
   const onSubmit = async (data: createTaskSchemaType) => {
+    console.log(data)
     try {
       await createTask(data);
       toast({

@@ -1,12 +1,13 @@
-import CollectionCard from "@/app/(main)/_components/collection/CollectionCard";
 import CreateCollectionBtn from "@/app/(main)/_components/collection/CreateCollectionBtn";
-import SadFace from "@/shared/components/icons/SadFace";
 import { prisma } from "@/shared/lib/prisma";
 import { currentUser } from "@clerk/nextjs";
 import AlertBanner from "../AlertBanner";
+import InitCollections from "@/shared/initData/InitCollections";
+import { CollectionsMapper } from "./CollectionsMapper";
 
 export async function CollectionsList() {
     const user = await currentUser();
+
     const collections = await prisma.collection.findMany({
         include: {
             tasks: true,
@@ -27,12 +28,9 @@ export async function CollectionsList() {
 
     return (
         <>
+            <InitCollections data={collections} />
             <CreateCollectionBtn />
-            <div className="flex flex-col gap-4 mt-6">
-                {collections.map((collection) => (
-                    <CollectionCard key={collection.id} collection={collection} />
-                ))}
-            </div>
+            <CollectionsMapper />
         </>
     );
 }
