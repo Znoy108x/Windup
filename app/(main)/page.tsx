@@ -1,20 +1,31 @@
 import { currentUser } from '@clerk/nextjs'
 import React, { Suspense } from 'react'
-import { Loader } from "lucide-react"
 import { Skeleton } from '@/components/ui/skeleton'
+import { getCollections } from '@/lib/db/query'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Info } from "lucide-react"
+import { WelcomeMessageFallback } from './_components/fallbacks/WelcomeMessageFallback'
+import { UserCollectionsFallback } from './_components/fallbacks/UserCollectionsFallback'
+import { Button } from '@/components/ui/button'
+import { CreateCollectionBtn } from './_components/buttons/CreateCollectionBtn'
 
 export default async function MainPage() {
 
     return (
-        <Suspense fallback={<WelcomeMessageFallback />}>
-            <WelcomeMessage />
-        </Suspense>
+        <>
+            <Suspense fallback={<WelcomeMessageFallback />}>
+                <WelcomeMessage />
+            </Suspense>
+            <Suspense fallback={<UserCollectionsFallback />}>
+                <UserCollections />
+            </Suspense>
+        </>
     )
 }
 
 const WelcomeMessage = async () => {
+
     const user = await currentUser()
-    console.log(user)
     if (!user) {
         return <div>error</div>
     }
@@ -29,13 +40,27 @@ const WelcomeMessage = async () => {
     )
 }
 
-const WelcomeMessageFallback = () => {
-    return (
-        <div className="flex w-full">
-            <h1 className="text-4xl font-bold space-y-3">
-                <Skeleton className="w-[200px] h-[36px]" />
-                <Skeleton className="w-[200px] h-[36px]" />
-            </h1>
-        </div >
-    )
+const UserCollections = async () => {
+    const user = await currentUser()
+    const collections = await getCollections(user?.id)
+
+    if (collections.length === 0) {
+        return (
+            <div>
+
+                <Alert className='mt-12'>
+                    <Info className="size-5" />
+                    <AlertTitle>
+                        <span className='font-bold text-lg'>NO COLLECTIONS FOUND!</span>
+                    </AlertTitle>
+                    <AlertDescription className="">
+                        Please add collections to get started!
+                    </AlertDescription>
+                </Alert>
+                <CreateCollectionBtn />
+            </div>
+        )
+    } else {
+        return <></>
+    }
 }
