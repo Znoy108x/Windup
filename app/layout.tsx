@@ -2,11 +2,11 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Separator } from "@/components/ui/separator";
-import NavBar from "@/components/NavBar";
-import { ThemeProvider } from "@/providers/ThemeProvider";
-import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/toaster";
+import { Separator } from "@/shared/components/ui/separator";
+import NavBar from "@/app/(main)/_components/NavBar";
+import { ThemeProvider } from "@/shared/providers/ThemeProvider";
+import { cn } from "@/shared/lib/utils";
+import { Toaster } from "@/shared/components/ui/toaster";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -31,15 +31,7 @@ export default function RootLayout({
       >
         <body>
           <ThemeProvider>
-            <div
-              className="
-             flex
-             min-h-screen
-             w-full
-             flex-col
-             items-center
-             dark:bg-black"
-            >
+            <div className=" flex min-h-screen w-full flex-col items-center dark:bg-beutral-950">
               <NavBar />
               <Separator />
               <main className="flex flex-grow w-full justify-center items-center dark:bg-neutral-950">
