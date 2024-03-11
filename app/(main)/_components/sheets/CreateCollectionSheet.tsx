@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import {
     Sheet,
     SheetContent,
@@ -29,6 +29,10 @@ import {
 } from "@/components/ui/select"
 import { CollectionColorType, CollectionColors } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { createCollection } from '@/lib/actions/collection'
+import { toast } from 'react-hot-toast'
+import { darkToastConfigsSuccess } from '@/lib/darkToastConfig'
+import { useRouter } from 'next/navigation'
 
 interface Props {
     open: boolean,
@@ -37,15 +41,41 @@ interface Props {
 
 const CreateCollectionSheet = ({ open, toggleOpen }: Props) => {
 
+    const router = useRouter()
+
     const form = useForm<createCollectionSchemaType>({
         resolver: zodResolver(createCollectionSchema),
-        defaultValues: {}
+        defaultValues: {
+            name: "",
+            color: ""
+        }
     })
 
     const { isSubmitting } = form.formState
 
-    const onSubmit = (formData: createCollectionSchemaType) => {
-        console.log(formData)
+    const onSubmit = async (formData: createCollectionSchemaType) => {
+        try {
+            toast.promise(
+                createCollection(formData),
+                {
+                    loading: <span>Creating Collection!</span>,
+                    error: (err) => <span>{err}</span>,
+                    success: () => {
+                        form.reset()
+                        toggleOpen()
+                        router.refresh()
+                        return <span>Collection Created Successfully!</span>
+                    }
+                },
+                darkToastConfigsSuccess
+            )
+        } catch (err) {
+            console.log("CREATE-COLLECTION", err)
+            toast.error(
+                String(err),
+                darkToastConfigsSuccess
+            )
+        }
     }
 
     return (

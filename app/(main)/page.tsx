@@ -46,9 +46,8 @@ const UserCollections = async () => {
 
     if (collections.length === 0) {
         return (
-            <div>
-
-                <Alert className='mt-12'>
+            <div className='mt-12'>
+                <Alert>
                     <Info className="size-5" />
                     <AlertTitle>
                         <span className='font-bold text-lg'>NO COLLECTIONS FOUND!</span>
@@ -61,6 +60,11 @@ const UserCollections = async () => {
             </div>
         )
     } else {
-        return <></>
+        return (
+            <div className='mt-12'>
+                Collections: {collections.length}
+                <CreateCollectionBtn />
+            </div>
+        )
     }
 }
