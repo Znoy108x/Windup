@@ -1,11 +1,30 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../../../../shared/components/ui/button";
 import CreateCollectionSheet from "./CreateCollectionSheet";
+import { useChat } from "@gappy/gappy-react"
 
 function CreateCollectionBtn() {
+
   const [open, setOpen] = useState(false);
   const handleOpenChange = (open: boolean) => setOpen(open);
+  // const { registerClientFunction } = useChat()
+
+  // const createCollection = () => {
+  //   setOpen(true)
+  // }
+
+  // const createCollectionDescription = {
+  //   "name": "createCollection",
+  //   "description": "I want to creeate a collection.",
+  //   "parameters": {
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   registerClientFunction(createCollectionDescription, createCollection)
+
+  // }, [])
 
   return (
     <div
