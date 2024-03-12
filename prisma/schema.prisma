@@ -3,30 +3,29 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Collection {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
   userId    String
   color     String
   createdAt DateTime @default(now())
-
-  tasks Task[]
+  tasks     Task[]
 
   @@unique([name, userId])
 }
 
 model Task {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(uuid())
   content   String
   userId    String
   done      Boolean   @default(false)
   expiresAt DateTime?
   createdAt DateTime  @default(now())
 
-  collectionId Int
+  collectionId String
   Collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 }

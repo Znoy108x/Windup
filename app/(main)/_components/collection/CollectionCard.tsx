@@ -28,6 +28,8 @@ import { toast } from "../../../../shared/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import CreateTaskDialog from "../task/CreateTaskDialog";
 import TaskCard from "../task/TaskCard";
+import { useCollectionContext } from "@/shared/context/CollectionsContext";
+import DataLoader from "../DataLoader";
 
 interface Props {
   collection: Collection & {
@@ -36,14 +38,14 @@ interface Props {
 }
 
 function CollectionCard({ collection }: Props) {
-  const [isOpen, setIsOpen] = useState(true);
+
+
   const router = useRouter();
-
-  const [showCreateModal, setShowCreateModal] = useState(false);
-
   const tasks = collection.tasks;
-
+  const [isOpen, setIsOpen] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoading, startTransition] = useTransition();
+  const { deleteCollection: deleteCollectionContextFunc, undoOptimisticDelete } = useCollectionContext()
 
   const removeCollection = async () => {
     try {
@@ -52,8 +54,9 @@ function CollectionCard({ collection }: Props) {
         title: "Success",
         description: "Collection deleted successfully",
       });
-      router.refresh();
     } catch (e) {
+      console.log(e)
+      undoOptimisticDelete(collection)
       toast({
         title: "Error",
         description: "Cannot delete collection",
@@ -116,7 +119,7 @@ function CollectionCard({ collection }: Props) {
               <Progress className="rounded-none" value={progress} />
               <div className="p-4 gap-3 flex flex-col">
                 {tasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard key={task.id} task={task} collectionId={collection.id} />
                 ))}
               </div>
             </>
@@ -124,7 +127,10 @@ function CollectionCard({ collection }: Props) {
           <Separator />
           <footer className="h-[40px] px-4 p-[2px] text-xs text-neutral-500 flex justify-between items-center ">
             <p>Created at {collection.createdAt.toLocaleDateString("en-US")}</p>
-            {isLoading && <div>Deleting...</div>}
+            {isLoading && <div className="flex items-center space-x-3 text-white ">
+              <DataLoader />
+              <span>Deleting...</span>
+            </div>}
             {!isLoading && (
               <div>
                 <Button
@@ -152,6 +158,7 @@ function CollectionCard({ collection }: Props) {
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
+                          deleteCollectionContextFunc(collection)
                           startTransition(removeCollection);
                         }}
                       >

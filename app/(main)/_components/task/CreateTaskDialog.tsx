@@ -27,11 +27,16 @@ import { Textarea } from "../../../../shared/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../shared/components/ui/popover";
 import { Calendar } from "../../../../shared/components/ui/calendar";
 import { Button } from "../../../../shared/components/ui/button";
-import { CalendarIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { createTask } from "@/shared/actions/task";
 import { toast } from "../../../../shared/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { v4 as uuidv4 } from 'uuid';
+import { useTaskContext } from "@/shared/context/TaskContext";
+import { useAuth } from "@clerk/nextjs";
+import { Loader } from "lucide-react";
+import { PopoverClose } from "@radix-ui/react-popover";
 
 interface Props {
   open: boolean;
@@ -40,6 +45,8 @@ interface Props {
 }
 
 function CreateTaskDialog({ open, collection, setOpen }: Props) {
+
+  const { userId } = useAuth()
   const form = useForm<createTaskSchemaType>({
     resolver: zodResolver(createTaskSchema),
     defaultValues: {
@@ -54,9 +61,13 @@ function CreateTaskDialog({ open, collection, setOpen }: Props) {
     form.reset();
   };
 
+  const { addTaskToCollectionState, undoAddTaskToCollectionState } = useTaskContext()
+
   const onSubmit = async (data: createTaskSchemaType) => {
+    const newTaskId = uuidv4()
     try {
-      await createTask(data);
+      addTaskToCollectionState({ ...data, userId: userId as string, id: newTaskId })
+      await createTask(data, newTaskId);
       toast({
         title: "Success",
         description: "Task created successfully!!",
@@ -64,6 +75,7 @@ function CreateTaskDialog({ open, collection, setOpen }: Props) {
       openChangeWrapper(false);
       router.refresh();
     } catch (e) {
+      undoAddTaskToCollectionState(data.collectionId, newTaskId)
       toast({
         title: "Error",
         description: "Cannot create task",
@@ -145,6 +157,9 @@ function CreateTaskDialog({ open, collection, setOpen }: Props) {
                             selected={field.value}
                             onSelect={field.onChange}
                             initialFocus
+                            disabled={(date) =>
+                              date < new Date(new Date().setHours(0, 0, 0, 0))
+                            }
                           />
                         </PopoverContent>
                       </Popover>
@@ -167,7 +182,7 @@ function CreateTaskDialog({ open, collection, setOpen }: Props) {
           >
             Confirm
             {form.formState.isSubmitting && (
-              <ReloadIcon className="animate-spin h-4 w-4 ml-2" />
+              <Loader className="animate-spin h-4 w-4 ml-2" />
             )}
           </Button>
         </DialogFooter>

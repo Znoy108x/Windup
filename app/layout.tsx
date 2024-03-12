@@ -4,9 +4,9 @@ import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Separator } from "@/shared/components/ui/separator";
 import NavBar from "@/app/(main)/_components/NavBar";
-import { ThemeProvider } from "@/shared/providers/ThemeProvider";
 import { cn } from "@/shared/lib/utils";
 import { Toaster } from "@/shared/components/ui/toaster";
+import Providers from "@/shared/providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,16 +30,16 @@ export default function RootLayout({
         }}
       >
         <body>
-          <ThemeProvider>
+          <Providers>
             <div className=" flex min-h-screen w-full flex-col items-center dark:bg-beutral-950">
               <NavBar />
               <Separator />
-              <main className="flex flex-grow w-full justify-center items-center dark:bg-neutral-950">
+              <main className="flex flex-grow w-full justify-center items-center dark:bg-neutral-950 relative overflow-hidden">
                 {children}
                 <Toaster />
               </main>
             </div>
-          </ThemeProvider>
+          </Providers>
         </body>
       </html>
     </ClerkProvider>

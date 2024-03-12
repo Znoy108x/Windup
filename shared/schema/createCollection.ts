@@ -7,6 +7,9 @@ export const createCollectionSchema = z.object({
   }),
   color: z
     .string()
+    .min(1, {
+      message: "Please select a color.",
+    })
     .refine((color) => Object.keys(CollectionColors).includes(color)),
 });
 
