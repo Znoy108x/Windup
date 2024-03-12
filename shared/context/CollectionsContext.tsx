@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, createContext, useContext, useEffect, useState } from "react"
 import { CollectionAndTasksType, CreateCollectionTypes } from "../types/CollectionTypes"
+import { Task } from "@prisma/client";
 
 type CollectionContextType = {
     collections: CollectionAndTasksType[],
@@ -9,7 +10,11 @@ type CollectionContextType = {
     collectionsNameMap: Map<string, number>,
     initiateCollections: (collections: CollectionAndTasksType[]) => void;
     deleteCollection: (collection: CollectionAndTasksType) => void,
-    undoOptimisticDelete: (collection: CollectionAndTasksType) => void
+    undoOptimisticDelete: (collection: CollectionAndTasksType) => void,
+    taskMap: Map<string, number>,
+    setTaskMap: Dispatch<SetStateAction<Map<string, number>>>,
+    setCompletedTaskStartIndexMap: Dispatch<SetStateAction<Map<string, number>>>,
+    completedTaskStartIndexMap: Map<string, number>
 }
 
 const CollectionContext = createContext<CollectionContextType | undefined>(undefined)
@@ -17,7 +22,9 @@ const CollectionContext = createContext<CollectionContextType | undefined>(undef
 export const CollectionContextProvider = ({ children }: { children: React.ReactNode }) => {
 
     const [collections, setCollections] = useState<CollectionAndTasksType[]>([])
+    const [taskMap, setTaskMap] = useState<Map<string, number>>(new Map())
     const [collectionsNameMap, setCollectionsNameMap] = useState<Map<string, number>>(new Map())
+    const [completedTaskStartIndexMap, setCompletedTaskStartIndexMap] = useState<Map<string, number>>(new Map())
 
     const removeCollection = (id: string) => {
         setCollections((prevState) => prevState?.filter(collection => collection.id !== id))
@@ -44,8 +51,15 @@ export const CollectionContextProvider = ({ children }: { children: React.ReactN
     }
 
     useEffect(() => {
-        console.log(collections)
+        console.log({ collections })
     }, [collections])
+    useEffect(() => {
+        console.log({ completedTaskStartIndexMap })
+    }, [completedTaskStartIndexMap])
+    useEffect(() => {
+        console.log({ taskMap })
+    }, [taskMap])
+
 
     const undoOptimisticDelete = (collection: CollectionAndTasksType) => {
         if (!collectionsNameMap.get(collection.name)) {
@@ -64,20 +78,32 @@ export const CollectionContextProvider = ({ children }: { children: React.ReactN
         }
     }
 
+    const initTasks = (collectionId: string, tasks: Task[], newTasksMap: Map<string, number>) => {
+        let isFoundCompletedStartIndex = false;
+        tasks.forEach((task, index) => {
+            newTasksMap.set(`${collectionId}-${task.id}`, 1);
+            if (!isFoundCompletedStartIndex && task.done) {
+                isFoundCompletedStartIndex = true;
+                completedTaskStartIndexMap.set(`${collectionId}`, index)
+                setCompletedTaskStartIndexMap(completedTaskStartIndexMap)
+            }
+        });
+    }
+
     const initiateCollections = (collections: CollectionAndTasksType[]) => {
         if (collections.length > 0) {
-            collections.map(collection => {
-                collectionsNameMap.set(collection.name, 1)
+            const newTasksMap: Map<string, number> = new Map()
+            const newCollectionNameMap: Map<string, number> = new Map()
+            collections.forEach(collection => {
+                newCollectionNameMap.set(collection.name, 1)
+                initTasks(collection.id, collection.tasks, newTasksMap)
             })
             setCollections(collections)
-            setCollectionsNameMap(collectionsNameMap)
+            setTaskMap(newTasksMap)
+            setCollectionsNameMap(newCollectionNameMap)
         } else {
             setCollections([])
         }
-    }
-
-    const optimistiAddCollection = () => {
-
     }
 
     const values = {
@@ -88,7 +114,11 @@ export const CollectionContextProvider = ({ children }: { children: React.ReactN
         collectionsNameMap,
         initiateCollections,
         deleteCollection,
-        undoOptimisticDelete
+        undoOptimisticDelete,
+        taskMap,
+        setTaskMap,
+        setCompletedTaskStartIndexMap,
+        completedTaskStartIndexMap
     }
 
     return (

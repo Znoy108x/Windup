@@ -119,7 +119,7 @@ function CollectionCard({ collection }: Props) {
               <Progress className="rounded-none" value={progress} />
               <div className="p-4 gap-3 flex flex-col">
                 {tasks.map((task) => (
-                  <TaskCard key={task.id} task={task} />
+                  <TaskCard key={task.id} task={task} collectionId={collection.id} />
                 ))}
               </div>
             </>

@@ -1,6 +1,7 @@
 export type CreateTaskType = {
   content: string;
   userId: string;
-  done: boolean;
-  expiresAt?: Date;
+  expiresAt?: Date | undefined;
+  id: string;
+  collectionId: string;
 };

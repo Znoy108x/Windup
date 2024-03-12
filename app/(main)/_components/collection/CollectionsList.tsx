@@ -12,13 +12,16 @@ export async function CollectionsList() {
     const user = await currentUser();
     const collections = await prisma.collection.findMany({
         include: {
-            tasks: true,
+            tasks: {
+                orderBy: {
+                    done: "asc"
+                }
+            }
         },
         where: {
             userId: user?.id,
         },
     });
-    console.log(collections)
 
     return (
         <Fragment>

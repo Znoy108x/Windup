@@ -6,6 +6,8 @@ import { format } from "date-fns";
 import { cn } from "@/shared/lib/utils";
 import { setTaskToDone } from "@/shared/actions/task";
 import { useRouter } from "next/navigation";
+import { useTaskContext } from "@/shared/context/TaskContext";
+import { toast } from "@/shared/components/ui/use-toast";
 
 function getExpirationColor(expiresAt: Date) {
   const days = Math.floor(expiresAt.getTime() - Date.now()) / 1000 / 60 / 60;
@@ -17,22 +19,35 @@ function getExpirationColor(expiresAt: Date) {
   return "text-gree-500 dark:text-green-400";
 }
 
-function TaskCard({ task }: { task: Task }) {
-  const [isLoading, startTransition] = useTransition();
+function TaskCard({ task, collectionId }: { task: Task, collectionId: string }) {
+
   const router = useRouter();
+  const { updateTaskStatus, undoTaskStatus } = useTaskContext()
+
+  const handleTaskCheck = async () => {
+    try {
+      updateTaskStatus(collectionId, task.id)
+      await setTaskToDone(task.id);
+      router.refresh()
+    } catch (err) {
+      console.log(err)
+      undoTaskStatus(collectionId, task.id)
+      toast({
+        title: "Error",
+        description: "Something went wrong!",
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <div className="flex gap-2 items-start">
       <Checkbox
         id={task.id.toString()}
         className="w-5 h-5"
         checked={task.done}
-        disabled={task.done || isLoading}
-        onCheckedChange={() => {
-          startTransition(async () => {
-            await setTaskToDone(task.id);
-            router.refresh();
-          });
-        }}
+        disabled={task.done}
+        onCheckedChange={handleTaskCheck}
       />
       <label
         htmlFor={task.id.toString()}

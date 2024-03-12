@@ -4,7 +4,10 @@ import { prisma } from "@/shared/lib/prisma";
 import { createTaskSchemaType } from "@/shared/schema/createTask";
 import { currentUser } from "@clerk/nextjs";
 
-export async function createTask(data: createTaskSchemaType) {
+export async function createTask(
+  data: createTaskSchemaType,
+  newTaskId: string
+) {
   const user = await currentUser();
 
   if (!user) {
@@ -15,6 +18,7 @@ export async function createTask(data: createTaskSchemaType) {
 
   return await prisma.task.create({
     data: {
+      id: newTaskId,
       userId: user.id,
       content,
       expiresAt,
