@@ -1,6 +1,7 @@
 "use client"
 import React from 'react'
 import { Root, CopilotWindowWithTrigger } from "@gappy/gappy-react"
+import "@gappy/gappy-react/index.css"
 
 const GappyWrapper = ({ children }: { children: React.ReactNode }) => {
 

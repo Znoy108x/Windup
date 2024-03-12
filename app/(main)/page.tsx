@@ -3,6 +3,11 @@ import { WelcomeMsgFallback } from "./_components/fallbacks/WelcomeMessageFallba
 import { CollectionsFallback } from "./_components/fallbacks/CollectionsFallback";
 import { CollectionsList } from "./_components/collection/CollectionsList";
 import { WelcomMsg } from "./_components/WelcomeMessage";
+import dynamic from "next/dynamic";
+
+// const GappyWrapper = dynamic(() => import("./_components/GappyWrapper"), {
+//   ssr: false
+// })
 
 export default async function Home() {
   return (
