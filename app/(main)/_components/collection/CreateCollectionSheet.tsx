@@ -68,8 +68,10 @@ function CreateCollectionSheet({ open, onOpenChange }: Props) {
       try {
         addCollection(data, userId as string, newCollectionId)
         openChangeWrapper(false);
-        await createCollection(data);
+        await createCollection(data , newCollectionId);
+        router.refresh()
       } catch (err) {
+        console.log(err)
         removeCollection(newCollectionId)
         toast({
           title: "Error",

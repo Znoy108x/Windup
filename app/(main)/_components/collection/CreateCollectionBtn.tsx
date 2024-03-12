@@ -10,7 +10,7 @@ function CreateCollectionBtn() {
   return (
     <div
       className="
-    w-full rounded-md bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 p-[1px]"
+    w-full rounded-md bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 p-[1px] my-5"
     >
       <Button
         variant={"outline"}

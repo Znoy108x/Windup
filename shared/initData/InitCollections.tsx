@@ -6,7 +6,7 @@ import { CollectionAndTasksType } from '../types/CollectionTypes'
 const InitCollections = ({ data }: { data: CollectionAndTasksType[] }) => {
 
     const collectionsRef = useRef(false)
-    const {  initiateCollections } = useCollectionContext()
+    const { initiateCollections } = useCollectionContext()
 
     useEffect(() => {
         if (!collectionsRef.current) {

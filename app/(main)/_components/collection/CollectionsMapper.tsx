@@ -10,18 +10,9 @@ export const CollectionsMapper = () => {
 
     return (
         <div className="flex flex-col gap-4 mt-6">
-            {
-                !collections ? (
-                    <DataLoader />
-                ) : (
-                    <>
-                        {collections.map((collection) => (
-                            <CollectionCard key={collection.id} collection={collection} />
-                        ))}
-                    </>
-                )
-            }
-
+            {collections?.length >0 && collections.map((collection) => (
+                <CollectionCard key={collection.id} collection={collection} />
+            ))}
         </div >
     )
 }

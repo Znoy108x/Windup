@@ -1,22 +1,22 @@
-import { Dispatch, SetStateAction, createContext, useContext, useState } from "react"
+import { Dispatch, SetStateAction, createContext, useContext, useEffect, useState } from "react"
 import { CollectionAndTasksType, CreateCollectionTypes } from "../types/CollectionTypes"
-import { useAuth } from "@clerk/nextjs"
-import { Collection } from "@prisma/client";
 
 type CollectionContextType = {
-    collections: CollectionAndTasksType[] | undefined,
-    setCollections: Dispatch<SetStateAction<CollectionAndTasksType[] | undefined>>,
+    collections: CollectionAndTasksType[],
+    setCollections: Dispatch<SetStateAction<CollectionAndTasksType[]>>,
     addCollection: (data: CreateCollectionTypes, userId: string, newCollectionId: string) => void,
     removeCollection: (id: string) => void;
     collectionsNameMap: Map<string, number>,
     initiateCollections: (collections: CollectionAndTasksType[]) => void;
+    deleteCollection: (collection: CollectionAndTasksType) => void,
+    undoOptimisticDelete: (collection: CollectionAndTasksType) => void
 }
 
 const CollectionContext = createContext<CollectionContextType | undefined>(undefined)
 
 export const CollectionContextProvider = ({ children }: { children: React.ReactNode }) => {
 
-    const [collections, setCollections] = useState<CollectionAndTasksType[] | undefined>(undefined)
+    const [collections, setCollections] = useState<CollectionAndTasksType[]>([])
     const [collectionsNameMap, setCollectionsNameMap] = useState<Map<string, number>>(new Map())
 
     const removeCollection = (id: string) => {
@@ -24,31 +24,56 @@ export const CollectionContextProvider = ({ children }: { children: React.ReactN
     }
 
     const addCollection = (data: CreateCollectionTypes, userId: string, newCollectionId: string) => {
-
-        const newCollection: CollectionAndTasksType = {
-            id: newCollectionId,
-            name: data.name,
-            userId: userId,
-            color: data.color,
-            createdAt: new Date(),
-            tasks: []
+        if (!collectionsNameMap.get(data.name)) {
+            const newCollection: CollectionAndTasksType = {
+                id: newCollectionId,
+                name: data.name,
+                userId: userId,
+                color: data.color,
+                createdAt: new Date(),
+                tasks: []
+            }
+            if (collections) {
+                setCollections([...collections, newCollection])
+            } else {
+                setCollections([newCollection])
+            }
+            collectionsNameMap.set(data.name, 1)
+            setCollectionsNameMap(new Map(collectionsNameMap))
         }
-        if (collections) {
-            setCollections([...collections, newCollection])
-        } else {
-            setCollections([newCollection])
-        }
-        collectionsNameMap.set(data.name, 1)
-        setCollectionsNameMap(new Map(collectionsNameMap))
+    }
 
+    useEffect(() => {
+        console.log(collections)
+    }, [collections])
+
+    const undoOptimisticDelete = (collection: CollectionAndTasksType) => {
+        if (!collectionsNameMap.get(collection.name)) {
+            setCollections([...collections, collection])
+            collectionsNameMap.set(collection.name, 1)
+            setCollectionsNameMap(new Map(collectionsNameMap))
+        }
+    }
+
+    const deleteCollection = (collection: CollectionAndTasksType) => {
+        if (collectionsNameMap.get(collection.name)) {
+            const { id, name } = collection
+            setCollections(prevState => prevState.filter(collection => collection.id !== id))
+            collectionsNameMap.delete(name)
+            setCollectionsNameMap(collectionsNameMap)
+        }
     }
 
     const initiateCollections = (collections: CollectionAndTasksType[]) => {
-        collections.map(collection => {
-            collectionsNameMap.set(collection.name, 1)
-        })
-        setCollectionsNameMap(collectionsNameMap)
-        setCollections(collections)
+        if (collections.length > 0) {
+            collections.map(collection => {
+                collectionsNameMap.set(collection.name, 1)
+            })
+            setCollections(collections)
+            setCollectionsNameMap(collectionsNameMap)
+        } else {
+            setCollections([])
+        }
     }
 
     const optimistiAddCollection = () => {
@@ -61,7 +86,9 @@ export const CollectionContextProvider = ({ children }: { children: React.ReactN
         addCollection,
         removeCollection,
         collectionsNameMap,
-        initiateCollections
+        initiateCollections,
+        deleteCollection,
+        undoOptimisticDelete
     }
 
     return (

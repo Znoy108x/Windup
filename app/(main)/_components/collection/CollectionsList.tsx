@@ -4,10 +4,12 @@ import { currentUser } from "@clerk/nextjs";
 import AlertBanner from "../AlertBanner";
 import InitCollections from "@/shared/initData/InitCollections";
 import { CollectionsMapper } from "./CollectionsMapper";
+import { Fragment } from "react";
+import EmptyCollectionState from "./EmptyCollectionState";
 
 export async function CollectionsList() {
-    const user = await currentUser();
 
+    const user = await currentUser();
     const collections = await prisma.collection.findMany({
         include: {
             tasks: true,
@@ -16,21 +18,14 @@ export async function CollectionsList() {
             userId: user?.id,
         },
     });
-
-    if (collections.length === 0) {
-        return (
-            <div className="flex flex-col gap-5">
-                <AlertBanner title="EMPTY" description="Please create collections to move further!" />
-                <CreateCollectionBtn />
-            </div>
-        );
-    }
+    console.log(collections)
 
     return (
-        <>
-            <InitCollections data={collections} />
+        <Fragment>
+            <InitCollections data={collections ? collections : []} />
+            <EmptyCollectionState />
             <CreateCollectionBtn />
             <CollectionsMapper />
-        </>
-    );
+        </Fragment>
+    )
 }

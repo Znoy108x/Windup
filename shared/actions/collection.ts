@@ -1,10 +1,12 @@
 "use server";
 import { prisma } from "@/shared/lib/prisma";
-import { wait } from "@/shared/lib/wait";
 import { createCollectionSchemaType } from "@/shared/schema/createCollection";
 import { currentUser } from "@clerk/nextjs";
 
-export async function createCollection(form: createCollectionSchemaType) {
+export async function createCollection(
+  form: createCollectionSchemaType,
+  newCollectionId: string
+) {
   const user = await currentUser();
 
   if (!user) {
@@ -13,6 +15,7 @@ export async function createCollection(form: createCollectionSchemaType) {
 
   return await prisma.collection.create({
     data: {
+      id: newCollectionId,
       userId: user.id,
       color: form.color,
       name: form.name,
@@ -25,7 +28,6 @@ export async function deleteCollection(id: string) {
   if (!user) {
     throw new Error("user not found");
   }
-
   return await prisma.collection.delete({
     where: {
       id: id,
